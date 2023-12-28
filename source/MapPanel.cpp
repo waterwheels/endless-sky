@@ -217,6 +217,37 @@ namespace {
 
 }
 
+int64_t calculateExpectedCostsOverDays(PlayerInfo &player, int64_t days) {
+	int64_t totalPayment = 0;
+	int64_t dailyPayments = 0;
+
+	// Work out mortgage payments for the number of days specified
+	// If the daily payment * days is more then the principle, the
+	// player will have paid off the loan on the jouney
+	int64_t mortgageTempValue = 0;
+	for(const Mortgage &mortgage : player.Accounts().Mortgages())
+	{
+		mortgageTempValue = mortgage.Payment() * days;
+		if(mortgageTempValue >= mortgage.Principal())
+		{
+			mortgageTempValue = mortgage.Principal();
+		}
+		totalPayment -= mortgageTempValue;
+		mortgageTempValue = 0;
+	}
+
+	PlayerInfo::FleetBalance b = player.MaintenanceAndReturns();
+	dailyPayments += b.assetsReturns;
+	dailyPayments += player.Accounts().SalariesIncomeTotal();
+	dailyPayments += player.GetTributeTotal();
+
+	dailyPayments -= player.Salaries();
+
+	totalPayment += dailyPayments * days;
+
+	return totalPayment;
+}
+
 const float MapPanel::OUTER = 6.f;
 const float MapPanel::INNER = 3.5f;
 const float MapPanel::LINK_WIDTH = 1.2f;
@@ -1217,6 +1248,7 @@ void MapPanel::DrawSelectedSystem()
 	SpriteShader::Draw(sprite, Point(0. + selectedSystemOffset, Screen::Top() + .5f * sprite->Height()));
 
 	string text;
+	string jouneyCostText;
 	if(!player.KnowsName(*selectedSystem))
 		text = "Selected system: unexplored system";
 	else
@@ -1235,10 +1267,16 @@ void MapPanel::DrawSelectedSystem()
 	else if(jumps > 0)
 		text += " (" + to_string(jumps) + " jumps away)";
 
+	jouneyCostText = "Jouney cost (approx.) " + Format::CreditString(-calculateExpectedCostsOverDays(player, jumps));
+
 	const Font &font = FontSet::Get(14);
 	Point pos(-175. + selectedSystemOffset, Screen::Top() + .5 * (30. - font.Height()));
 	font.Draw({text, {350, Alignment::CENTER, Truncate::MIDDLE}},
 		pos, *GameData::Colors().Get("bright"));
+
+	Point pos2(-175., Screen::Top() + 30. + .5 * (30. - font.Height()));
+	font.Draw({jouneyCostText, {350, Alignment::CENTER, Truncate::MIDDLE}},
+		pos2, *GameData::Colors().Get("bright"));
 
 	// Reset the position of this UI element. If something is in the way, it will be
 	// moved back before it's drawn the next frame.
