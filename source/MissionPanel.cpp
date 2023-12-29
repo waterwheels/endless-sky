@@ -114,6 +114,56 @@ namespace {
 			}
 		}
 	}
+
+
+
+	void SetProfitInfo(std::list<Mission>::const_iterator mission, Information &info, bool perJump)
+	{
+		float perUnitProfit = 0;
+		int payment = mission->DisplayedPayment();
+		int passengers = mission->Passengers();
+		int cargo = mission->CargoSize();
+		int jumps = perJump ? mission->ExpectedJumps() : 1;
+
+		string unit;
+
+		if(payment == 0)
+		{
+			info.SetCondition("no payment");
+			info.SetString("payment", "No Payment");
+		}
+		else
+		{
+			info.SetString("payment", "Payment: " + Format::CreditString(payment));
+		}
+
+		if(passengers >= 1 && cargo == 0)
+		{
+			perUnitProfit = (float(payment) / passengers) / jumps;
+			unit = "/bunk";
+		}
+		else if(passengers == 0 && cargo >= 1)
+		{
+			perUnitProfit = (float(payment) / cargo) / jumps;
+			unit = "/ton";
+		}
+		else if(passengers >= 1 && cargo >= 1)
+		{
+			perUnitProfit = (float(payment) / cargo) / jumps;
+			unit = "/unit";
+		}
+		else if(passengers == 0 && cargo == 0)
+		{
+			info.SetCondition("no transport");
+			info.SetString("per unit payment", "No cargo or passenges");
+			return;
+		}
+
+		unit += perJump ? "/jump" : "";
+
+		info.SetString("per unit payment", Format::CreditString(perUnitProfit) + unit);
+		return;
+	}
 }
 
 
@@ -841,6 +891,12 @@ void MissionPanel::DrawMissionInfo()
 
 	info.SetString("cargo free", to_string(player.Cargo().Free()) + " tons");
 	info.SetString("bunks free", to_string(player.Cargo().BunksFree()) + " bunks");
+	
+	// Add profit per jump to info
+	if(availableIt != available.end())
+		SetProfitInfo(availableIt, info, true);
+	else if(acceptedIt != accepted.end())
+		SetProfitInfo(acceptedIt, info, true);
 
 	info.SetString("today", player.GetDate().ToString());
 

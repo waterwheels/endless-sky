@@ -1269,6 +1269,14 @@ interface "mission" bottom
 		center 0 -85
 	string "bunks free"
 		center 0 -65
+
+	active if "!no payment"
+	string "payment"
+		center -305 -85
+
+	active if "!no transport"
+	string "per unit payment"
+		center -305 -65
 	
 	label "today's date:"
 		center 130 -85
