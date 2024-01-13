@@ -1269,14 +1269,6 @@ interface "mission" bottom
 		center 0 -85
 	string "bunks free"
 		center 0 -65
-
-	active if "!no payment"
-	string "payment"
-		center -305 -85
-
-	active if "!no transport"
-	string "per unit payment"
-		center -305 -65
 	
 	label "today's date:"
 		center 130 -85
@@ -1292,6 +1284,39 @@ interface "mission" bottom
 	button A "Abort"
 		center 70 -25
 		dimensions 80 30
+
+	box "profit box"
+		center -305 -75
+		dimensions 200 20
+
+	visible if "!hide profit info"
+	sprite "ui/profit info"
+		center -310 0 
+		align bottom
+
+	active if "!no payment"
+	string "payment"
+		center -305 -85
+
+	active if "!no transport"
+	string "per unit payment"
+		center -305 -65
+
+	visible if "!hide profit info"
+	active
+	button h "_Hide"
+		center -365 -25
+		dimensions 100 31
+
+	visible if "hide profit info"
+	button h "S_how Profit Info"
+		center -365 -25
+		dimensions 100 31
+
+	visible if "!hide profit info"
+	button j "Per _Jump"
+		center -255 -25
+		dimensions 100 31
 
 
 
